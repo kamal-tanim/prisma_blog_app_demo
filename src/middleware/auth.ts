@@ -2,11 +2,11 @@ import { NextFunction, Request, Response } from "express";
 import { auth as betterAuth } from "../lib/auth";
 import { UserRole } from "../enum/UserRole";
 
-const auth = (...role: UserRole []) => {
-  
-    return async (req: Request, res: Response, next: NextFunction) => {
-        try {
-          const session = await betterAuth.api.getSession({
+const auth = (...role: UserRole[]) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      
+      const session = await betterAuth.api.getSession({
         headers: req.headers as any,
       });
 
@@ -41,12 +41,10 @@ const auth = (...role: UserRole []) => {
       }
 
       next();
-        }
-        catch (err) {
-            console.error(err)
-        }
-    };
-  
+    } catch (err) {
+      console.error(err);
+    }
+  };
 };
 
-export default auth
+export default auth;
