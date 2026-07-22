@@ -43,14 +43,24 @@ const getAllPost = async (req: Request, res: Response) => {
 
     const authorId = req.query.authorId as string | undefined;
 
-    // console.log(authorId);
+    const page = Number(req.query.page ?? 1);
+    const limit = Number(req.query.limit ?? 5);
+
+    const sortBy = req.query.sortBy as string | undefined;
+    const sortOrder = req.query.sortOrder as string | undefined;
+
+    console.log(page, limit);
 
     const result = await postService.getAllPost({
       search: searchString,
       tags,
       isFeatured,
       status,
-      authorId
+      authorId,
+      page,
+      limit,
+      sortBy,
+      sortOrder,
     });
     res.status(200).json(result);
   } catch (error) {
