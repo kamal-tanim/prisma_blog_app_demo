@@ -5,7 +5,11 @@ import { UserRole } from "../../enum/UserRole";
 
 const router = express.Router();
 
-router.post("/", auth(UserRole.USER), postController.createPost);
+router.post(
+  "/",
+  auth(UserRole.USER, UserRole.ADMIN),
+  postController.createPost,
+);
 
 router.get("/", postController.getAllPost);
 

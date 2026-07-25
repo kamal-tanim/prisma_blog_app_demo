@@ -12,6 +12,8 @@ const createPost = async (req: Request, res: Response) => {
         error: "Post creation failed",
       });
     }
+
+    console.log(req.user.id)
     const result = await postService.createPost(
       req.body,
       req.user.id as string,
@@ -83,7 +85,7 @@ const getPostById = async (req: Request, res: Response) => {
     res.status(201).json({ result });
   } catch (error) {
     res.status(400).json({
-      error: "Post creation failed",
+      error: "Post fetched failed",
       details: error,
     });
   }
