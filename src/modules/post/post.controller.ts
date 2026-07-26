@@ -13,7 +13,7 @@ const createPost = async (req: Request, res: Response) => {
       });
     }
 
-    console.log(req.user.id)
+    // console.log(req.user.id)
     const result = await postService.createPost(
       req.body,
       req.user.id as string,
@@ -73,6 +73,19 @@ const getAllPost = async (req: Request, res: Response) => {
   }
 };
 
+const getMyPost = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+    const result = await postService.getMyPost(user?.id as string);
+
+    res.status(201).json({ result });
+  } catch (error) {
+    res.status(400).json({
+      error: "Post fetched failed",
+      details: error,
+    });
+  }
+};
 const getPostById = async (req: Request, res: Response) => {
   try {
     const { postId } = req.params;
@@ -94,5 +107,6 @@ const getPostById = async (req: Request, res: Response) => {
 export const postController = {
   createPost,
   getAllPost,
-  getPostById
+  getPostById,
+  getMyPost
 };

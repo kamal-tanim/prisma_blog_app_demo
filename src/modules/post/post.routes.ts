@@ -11,6 +11,12 @@ router.post(
   postController.createPost,
 );
 
+router.get(
+  "/my-post",
+  auth(UserRole.USER, UserRole.ADMIN),
+  postController.getMyPost,
+);
+
 router.get("/", postController.getAllPost);
 
 router.get("/:postId", postController.getPostById);

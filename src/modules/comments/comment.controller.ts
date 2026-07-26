@@ -65,6 +65,7 @@ const deleteComment = async (req: Request, res: Response) => {
     });
   }
 };
+
 const updateComment = async (req: Request, res: Response) => {
   try {
     const { commentId } = req.params;
@@ -78,8 +79,30 @@ const updateComment = async (req: Request, res: Response) => {
 
     res.status(200).json({ result });
   } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "comment update failed";
     res.status(400).json({
-      error: "Comment update failed",
+      message: errorMessage,
+      details: error,
+    });
+  }
+};
+
+const moderateComment = async (req: Request, res: Response) => {
+  try {
+    const { commentId } = req.params;
+    const data = req.body;
+    const result = await commentService.moderateComment(
+      commentId as string,
+      data,
+    );
+
+    res.status(200).json({ result });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "status update failed";
+    res.status(400).json({
+      message: errorMessage,
       details: error,
     });
   }
@@ -90,5 +113,6 @@ export const commentController = {
   getCommentById,
   getCommentByAuthorId,
   deleteComment,
-  updateComment
+  updateComment,
+  moderateComment,
 };

@@ -91,7 +91,7 @@ model Session {
 
   @@unique([token])
   @@index([userId])
-  @@map("s ession")
+  @@map("session")
 }
 
 model Account {
