@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { postService } from "./post.service";
 import { PostStatus } from "../../../generated/prisma/enums";
 import paginationSortingHelper from "../../helpers/paginationSortingHelper";
+import { UserRole } from "../../enum/UserRole";
 
 const createPost = async (req: Request, res: Response) => {
   try {
@@ -75,7 +76,7 @@ const getAllPost = async (req: Request, res: Response) => {
 
 const getMyPost = async (req: Request, res: Response) => {
   try {
-    const user = req.user
+    const user = req.user;
     const result = await postService.getMyPost(user?.id as string);
 
     res.status(201).json({ result });
@@ -86,6 +87,7 @@ const getMyPost = async (req: Request, res: Response) => {
     });
   }
 };
+
 const getPostById = async (req: Request, res: Response) => {
   try {
     const { postId } = req.params;
@@ -104,9 +106,79 @@ const getPostById = async (req: Request, res: Response) => {
   }
 };
 
+const updatePost = async (req: Request, res: Response) => {
+  try {
+    const { postId } = req.params;
+    const data = req.body;
+    const user = req.user;
+    const isAdmin = user?.role === UserRole.ADMIN;
+
+    if (!postId) {
+      throw new Error("post id required");
+    }
+    const result = await postService.updatePost(
+      postId as string,
+      data,
+      user?.id as string,
+      isAdmin,
+    );
+
+    res.status(200).json({ result });
+  } catch (error) {
+    res.status(400).json({
+      error: "Post update failed",
+      details: error,
+    });
+  }
+};
+
+const deletePost = async (req: Request, res: Response) => {
+  try {
+    const { postId } = req.params;
+    const user = req.user;
+    const isAdmin = user?.role === UserRole.ADMIN;
+
+    if (!postId) {
+      throw new Error("post id required");
+    }
+    const result = await postService.deletePost(
+      postId as string,
+      user?.id as string,
+      isAdmin,
+    );
+
+    res.status(200).json({ result });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "status update failed";
+    res.status(400).json({
+      message: errorMessage,
+      details: error,
+    });
+  }
+};
+
+const postStats = async (req: Request, res: Response) => {
+  try {
+    const result = await postService.postStats();
+    res.status(200).json({ result });
+  } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "posts stats fetched failed";
+    console.log(error);
+    res.status(400).json({
+      message: errorMessage,
+      details: error,
+    });
+  }
+};
+
 export const postController = {
   createPost,
   getAllPost,
   getPostById,
-  getMyPost
+  getMyPost,
+  updatePost,
+  deletePost,
+  postStats,
 };

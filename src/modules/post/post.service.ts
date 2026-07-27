@@ -4,6 +4,7 @@ import {
   PostStatus,
 } from "../../../generated/prisma/client";
 import { PostWhereInput } from "../../../generated/prisma/models";
+import { UserRole } from "../../enum/UserRole";
 import { prisma } from "../../lib/prisma";
 
 const createPost = async (
@@ -169,7 +170,7 @@ const getMyPost = async (authorId: string) => {
       status: "ACTIVE",
     },
     select: {
-      id: true
+      id: true,
     },
   });
 
@@ -200,11 +201,124 @@ const getMyPost = async (authorId: string) => {
     data: result,
   };
 };
-  
+
+const updatePost = async (
+  postId: string,
+  data: Partial<Post>,
+  authorId: string,
+  isAdmin: boolean,
+) => {
+  const postData = await prisma.post.findUniqueOrThrow({
+    where: {
+      id: postId,
+    },
+    select: {
+      id: true,
+      authorId: true,
+    },
+  });
+  if (!isAdmin && postData.authorId !== authorId) {
+    throw new Error("unauthorized user!!! Unable to update post");
+  }
+
+  if (!isAdmin) {
+    delete data.isFeatured;
+  }
+
+  const result = await prisma.post.update({
+    where: {
+      id: postData.id,
+    },
+    data,
+  });
+
+  return result;
+};
+
+const deletePost = async (
+  postId: string,
+  authorId: string,
+  isAdmin: boolean,
+) => {
+  const postData = await prisma.post.findUniqueOrThrow({
+    where: {
+      id: postId,
+    },
+    select: {
+      id: true,
+      authorId: true,
+    },
+  });
+  if (!isAdmin && postData.authorId !== authorId) {
+    throw new Error("unauthorized user!!! Unable to delete post");
+  }
+
+  const result = await prisma.post.delete({
+    where: {
+      id: postData.id,
+    },
+  });
+
+  return result;
+};
+
+const postStats = async () => {
+  return await prisma.$transaction(async (statData) => {
+    const [
+      totalPost,
+      publishedPosts,
+      archivedPosts,
+      draftPosts,
+      totalComments,
+      approvedComments,
+      admins,
+      users,
+      totalViews,
+    ] = await Promise.all([
+      statData.post.count(),
+      statData.post.count({
+        where: { status: PostStatus.PUBLISHED },
+      }),
+      statData.post.count({
+        where: { status: PostStatus.ARCHIVE },
+      }),
+      statData.post.count({
+        where: { status: PostStatus.DRAFT },
+      }),
+      statData.comments.count(),
+      statData.comments.count({
+        where: { status: "APPROVED" },
+      }),
+      statData.user.count({
+        where:{role: UserRole.ADMIN}
+      }),
+      statData.user.count({
+        where:{role: UserRole.USER}
+      }),
+      statData.post.aggregate({
+        _sum: { views: true}
+      })
+    ]);
+    return {
+      totalPost,
+      publishedPosts,
+      archivedPosts,
+      draftPosts,
+      totalComments,
+      approvedComments,
+      admins,
+      users,
+      totalViews: totalViews._sum.views
+    };
+  });
+};
 
 export const postService = {
   createPost,
   getAllPost,
   getPostById,
   getMyPost,
+  updatePost,
+  deletePost,
+  postStats,
 };
