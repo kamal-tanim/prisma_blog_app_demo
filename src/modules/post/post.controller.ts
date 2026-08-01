@@ -1,10 +1,10 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { postService } from "./post.service";
 import { PostStatus } from "../../../generated/prisma/enums";
 import paginationSortingHelper from "../../helpers/paginationSortingHelper";
 import { UserRole } from "../../enum/UserRole";
 
-const createPost = async (req: Request, res: Response) => {
+const createPost = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // const user = req.user
 
@@ -21,14 +21,11 @@ const createPost = async (req: Request, res: Response) => {
     );
     res.status(201).json({ result });
   } catch (error) {
-    res.status(400).json({
-      error: "Post creation failed",
-      details: error,
-    });
+    next(error)
   }
 };
 
-const getAllPost = async (req: Request, res: Response) => {
+const getAllPost = async (req: Request, res: Response , next: NextFunction) => {
   try {
     const { search } = req.query;
 
@@ -67,10 +64,7 @@ const getAllPost = async (req: Request, res: Response) => {
     });
     res.status(200).json(result);
   } catch (error) {
-    res.status(400).json({
-      error: "failed to fetch all post",
-      details: error,
-    });
+    next(error);
   }
 };
 
